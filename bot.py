@@ -285,13 +285,11 @@ def generate_post_text(prompt=None, emotion="motivational"):
         content_request = f"Напиши пост о трейдинге на тему: {user_prompt}\n\n"
         content_request += f"Тон поста должен быть {emotional_tone}\n\n"
         content_request += "Правила написания поста:\n"
-        content_request += "1. Длина поста: 800-1000 символов\n"
+        content_request += "1. Длина поста: 200-300 символов (краткость - сестра таланта)\n"
         content_request += "2. Начни пост с подходящего эмодзи\n"
         content_request += "3. Используй простой язык, понятный даже новичкам в трейдинге\n"
-        content_request += "4. Добавь конкретные факты, цифры и практические советы\n"
-        content_request += "5. Разбей текст на короткие абзацы для лучшей читаемости\n"
-        content_request += "6. Используй список из 3-5 пунктов, если это уместно\n" 
-        content_request += "7. В конце добавь 3-4 хэштега, связанных с темой, и обязательно #трейдинг #tradepo\n\n"
+        content_request += "4. Добавь один конкретный факт или практический совет\n"
+        content_request += "5. В конце добавь 2-3 хэштега, связанных с темой, и обязательно #трейдинг #tradepo\n\n"
         content_request += f"Текущая дата: {current_time.strftime('%d.%m.%Y')}."
             
         data = {
@@ -300,7 +298,7 @@ def generate_post_text(prompt=None, emotion="motivational"):
                 {"role": "system", "content": "Ты - опытный финансовый аналитик и эксперт по трейдингу. Твой стиль письма - авторитетный и полезный. Создавай уникальный контент."},
                 {"role": "user", "content": content_request}
             ],
-            "max_tokens": 600,  # Увеличено до 600 для более детального контента
+            "max_tokens": 30,  # Строгое ограничение токенов из-за лимитов API
             "temperature": 0.8  # Increase for more variety
         }
             
