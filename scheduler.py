@@ -47,17 +47,22 @@ class PostScheduler:
                 self.used_topics = []
                 available_topics = TRADING_TOPICS
             
+            # Выбираем тему
             topic = random.choice(available_topics)
             self.used_topics.append(topic)
             
             # Keep only recent history
             if len(self.used_topics) > self.max_topic_history:
                 self.used_topics.pop(0)
-                
-            logger.info(f"Selected topic: {topic} (used topics: {len(self.used_topics)})")
             
-            # Create and send the post
-            success, text, image_url, result = create_and_send_post(topic)
+            # Выбираем случайную эмоциональную окраску
+            emotions = ["motivational", "educational", "analytical", "cautionary"]
+            emotion = random.choice(emotions)
+            
+            logger.info(f"[{self._format_log_time()}] Selected topic: {topic}, emotion: {emotion} (used topics: {len(self.used_topics)})")
+            
+            # Create and send the post with the selected emotion
+            success, text, image_url, result = create_and_send_post(topic, emotion)
             
             if success:
                 logger.info(f"[{self._format_log_time()}] Scheduled post created and sent successfully")
@@ -166,10 +171,15 @@ class PostScheduler:
             
             # Get random topic
             topic = get_random_topic()
-            logger.info(f"Selected topic: {topic}")
             
-            # Create and send post (without using locks)
-            success, text, image_url, result = create_and_send_post(topic)
+            # Выбираем случайную эмоциональную окраску
+            emotions = ["motivational", "educational", "analytical", "cautionary"]
+            emotion = random.choice(emotions)
+            
+            logger.info(f"[{self._format_log_time()}] Selected topic: {topic}, emotion: {emotion} for manual run")
+            
+            # Create and send post with the selected emotion
+            success, text, image_url, result = create_and_send_post(topic, emotion)
             
             if success:
                 logger.info(f"[{self._format_log_time()}] Manual post created and sent successfully")

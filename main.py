@@ -292,8 +292,14 @@ def get_scheduled_posts():
         logger.error(f"Error loading scheduled posts: {e}")
         return []
 
-def add_scheduled_post(theme, scheduled_at):
-    """Add a post to the scheduled posts list"""
+def add_scheduled_post(theme, scheduled_at, emotion="motivational"):
+    """Add a post to the scheduled posts list
+    
+    Args:
+        theme (str): Тема поста
+        scheduled_at (str): Запланированная дата и время в формате ISO
+        emotion (str, optional): Эмоциональный тон поста
+    """
     try:
         scheduled_posts = []
         if os.path.exists(SCHEDULED_POSTS_FILE):
@@ -308,6 +314,7 @@ def add_scheduled_post(theme, scheduled_at):
             'id': len(scheduled_posts) + 1,
             'theme': theme,
             'scheduled_at': scheduled_at,
+            'emotion': emotion,
             'created_at': datetime.datetime.now().isoformat()
         }
         
