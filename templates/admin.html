@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}TRADEPO - Панель администратора{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4 border-bottom pb-3">
+        <i class="fas fa-user-shield me-2" style="color: #4a6cf7;"></i> Панель администратора
+    </h1>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="list-group sticky-top" style="top: 1rem;">
+                <a href="#tokens" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                    <i class="fas fa-key me-2"></i> Управление токенами
+                </a>
+                <a href="#bot-settings" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                    <i class="fas fa-robot me-2"></i> Настройки бота
+                </a>
+                <a href="#ui-settings" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                    <i class="fas fa-palette me-2"></i> Настройки интерфейса
+                </a>
+                <a href="#scheduled-posts" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                    <i class="fas fa-calendar-alt me-2"></i> Управление расписанием
+                </a>
+                <a href="#backup" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                    <i class="fas fa-cloud-download-alt me-2"></i> Резервное копирование
+                </a>
+                <a href="#system" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                    <i class="fas fa-cogs me-2"></i> Системные настройки
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Управление токенами -->
+                <div class="tab-pane fade show active" id="tokens">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-key me-2 text-primary"></i> Управление API-токенами</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ url_for('update_tokens') }}">
+                                <div class="mb-3">
+                                    <label for="telegram_token" class="form-label">Telegram Bot Token:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fab fa-telegram text-primary"></i></span>
+                                        <input type="password" class="form-control" id="telegram_token" name="telegram_token" 
+                                               value="{{ telegram_token|default('', true) }}" required>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('telegram_token')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Токен вашего Telegram бота от BotFather.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="channel_id" class="form-label">Telegram Channel ID:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-hashtag text-primary"></i></span>
+                                        <input type="text" class="form-control" id="channel_id" name="channel_id" 
+                                               value="{{ channel_id|default('', true) }}" required>
+                                    </div>
+                                    <div class="form-text">ID вашего Telegram канала, например: @mychannel или -1001234567890.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="openrouter_api_key" class="form-label">OpenRouter API Key:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-brain text-primary"></i></span>
+                                        <input type="password" class="form-control" id="openrouter_api_key" name="openrouter_api_key" 
+                                               value="{{ openrouter_api_key|default('', true) }}">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('openrouter_api_key')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">API-ключ OpenRouter для генерации контента.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="openai_api_key" class="form-label">OpenAI API Key (опционально):</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-robot text-primary"></i></span>
+                                        <input type="password" class="form-control" id="openai_api_key" name="openai_api_key" 
+                                               value="{{ openai_api_key|default('', true) }}">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('openai_api_key')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">API-ключ OpenAI для альтернативной генерации контента.</div>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Сохранить изменения
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Настройки бота -->
+                <div class="tab-pane fade" id="bot-settings">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-robot me-2 text-primary"></i> Настройки бота</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ url_for('update_bot_settings') }}">
+                                <div class="mb-3">
+                                    <label for="default_emotion" class="form-label">Эмоциональный тон по умолчанию:</label>
+                                    <select class="form-select" id="default_emotion" name="default_emotion">
+                                        <option value="motivational" {% if default_emotion == 'motivational' %}selected{% endif %}>Мотивационный</option>
+                                        <option value="educational" {% if default_emotion == 'educational' %}selected{% endif %}>Образовательный</option>
+                                        <option value="analytical" {% if default_emotion == 'analytical' %}selected{% endif %}>Аналитический</option>
+                                        <option value="cautionary" {% if default_emotion == 'cautionary' %}selected{% endif %}>Предостерегающий</option>
+                                    </select>
+                                    <div class="form-text">Основной эмоциональный тон для генерации постов.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="post_template" class="form-label">Шаблон поста:</label>
+                                    <textarea class="form-control" id="post_template" name="post_template" rows="5">{{ post_template|default('', true) }}</textarea>
+                                    <div class="form-text">Шаблон для генерации поста. Используйте {text} для вставки основного текста.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="max_post_history" class="form-label">Максимальное количество сохраняемых постов:</label>
+                                    <input type="number" class="form-control" id="max_post_history" name="max_post_history" 
+                                           value="{{ max_post_history|default(100, true) }}" min="10" max="1000">
+                                    <div class="form-text">Сколько последних постов хранить в истории.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="retry_count" class="form-label">Количество попыток при ошибках:</label>
+                                    <input type="number" class="form-control" id="retry_count" name="retry_count" 
+                                           value="{{ retry_count|default(3, true) }}" min="1" max="10">
+                                    <div class="form-text">Сколько раз пытаться повторить операцию при ошибке.</div>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Сохранить настройки
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Настройки интерфейса -->
+                <div class="tab-pane fade" id="ui-settings">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-palette me-2 text-primary"></i> Настройки интерфейса</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ url_for('update_ui_settings') }}">
+                                <div class="mb-3">
+                                    <label for="primary_color" class="form-label">Основной цвет:</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" 
+                                               value="{{ primary_color|default('#4a6cf7', true) }}">
+                                        <input type="text" class="form-control" value="{{ primary_color|default('#4a6cf7', true) }}" 
+                                               id="primary_color_text" onchange="document.getElementById('primary_color').value = this.value">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="secondary_color" class="form-label">Дополнительный цвет:</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="secondary_color" name="secondary_color" 
+                                               value="{{ secondary_color|default('#48bb78', true) }}">
+                                        <input type="text" class="form-control" value="{{ secondary_color|default('#48bb78', true) }}" 
+                                               id="secondary_color_text" onchange="document.getElementById('secondary_color').value = this.value">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="site_title" class="form-label">Заголовок сайта:</label>
+                                    <input type="text" class="form-control" id="site_title" name="site_title" 
+                                           value="{{ site_title|default('TRADEPO - Управление Telegram-каналом', true) }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="logo_text" class="form-label">Текст логотипа:</label>
+                                    <input type="text" class="form-control" id="logo_text" name="logo_text" 
+                                           value="{{ logo_text|default('TRADEPO', true) }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="enable_animations" name="enable_animations" 
+                                               {% if enable_animations|default(true) %}checked{% endif %}>
+                                        <label class="form-check-label" for="enable_animations">Включить анимации интерфейса</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Применить изменения
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Управление расписанием -->
+                <div class="tab-pane fade" id="scheduled-posts">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-primary"></i> Управление расписанием</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ url_for('update_schedule_settings') }}">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> Настройте время автоматических публикаций. Используйте часовой пояс: {{ timezone }}
+                                </div>
+
+                                <div id="schedule-times">
+                                    {% for time in schedule_times %}
+                                    <div class="input-group mb-2 schedule-item">
+                                        <span class="input-group-text"><i class="far fa-clock"></i></span>
+                                        <input type="time" class="form-control" name="schedule_times[]" value="{{ time }}">
+                                        <button type="button" class="btn btn-outline-danger remove-time" onclick="removeScheduleTime(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-outline-success" onclick="addScheduleTime()">
+                                        <i class="fas fa-plus me-2"></i> Добавить время
+                                    </button>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="timezone" class="form-label">Часовой пояс:</label>
+                                    <select class="form-select" id="timezone" name="timezone">
+                                        <option value="Asia/Dushanbe" {% if timezone == 'Asia/Dushanbe' %}selected{% endif %}>Душанбе (UTC+5)</option>
+                                        <option value="Europe/Moscow" {% if timezone == 'Europe/Moscow' %}selected{% endif %}>Москва (UTC+3)</option>
+                                        <option value="Europe/London" {% if timezone == 'Europe/London' %}selected{% endif %}>Лондон (UTC+0/+1)</option>
+                                        <option value="America/New_York" {% if timezone == 'America/New_York' %}selected{% endif %}>Нью-Йорк (UTC-5/-4)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Сохранить расписание
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Резервное копирование -->
+                <div class="tab-pane fade" id="backup">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-cloud-download-alt me-2 text-primary"></i> Резервное копирование</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h6 class="mb-3">Резервное копирование данных</h6>
+                                <form method="post" action="{{ url_for('create_backup') }}">
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-download me-2"></i> Создать резервную копию
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6 class="mb-3">Восстановление из резервной копии</h6>
+                                <form method="post" action="{{ url_for('restore_backup') }}" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="backup_file" class="form-label">Файл резервной копии:</label>
+                                        <input class="form-control" type="file" id="backup_file" name="backup_file">
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="fas fa-upload me-2"></i> Восстановить из копии
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Системные настройки -->
+                <div class="tab-pane fade" id="system">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-cogs me-2 text-primary"></i> Системные настройки</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h6 class="mb-3">Учетная запись администратора</h6>
+                                <form method="post" action="{{ url_for('update_admin_credentials') }}">
+                                    <div class="mb-3">
+                                        <label for="admin_username" class="form-label">Имя пользователя:</label>
+                                        <input type="text" class="form-control" id="admin_username" name="admin_username" 
+                                               value="{{ admin_username|default('TRADEPO', true) }}" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="admin_password" class="form-label">Новый пароль:</label>
+                                        <input type="password" class="form-control" id="admin_password" name="admin_password" 
+                                               placeholder="Оставьте пустым, чтобы сохранить текущий">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="admin_password_confirm" class="form-label">Подтверждение пароля:</label>
+                                        <input type="password" class="form-control" id="admin_password_confirm" name="admin_password_confirm" 
+                                               placeholder="Оставьте пустым, чтобы сохранить текущий">
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i> Обновить учетные данные
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6 class="mb-3">Системная информация</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row">Версия приложения:</th>
+                                                <td>1.0.0</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Последнее обновление:</th>
+                                                <td>{{ current_date }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Количество постов в базе:</th>
+                                                <td>{{ post_count }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">Статус планировщика:</th>
+                                                <td>
+                                                    {% if scheduler_status %}
+                                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Активен</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i> Остановлен</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6 class="mb-3">Действия с системой</h6>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <form method="post" action="{{ url_for('clear_database') }}" onsubmit="return confirm('Вы уверены, что хотите очистить базу данных? Это действие нельзя отменить.');">
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-trash-alt me-2"></i> Очистить базу данных
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <form method="post" action="{{ url_for('restart_application') }}">
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-warning">
+                                                    <i class="fas fa-redo-alt me-2"></i> Перезапустить приложение
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = input.nextElementSibling.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+    
+    function addScheduleTime() {
+        const container = document.getElementById('schedule-times');
+        const newItem = document.createElement('div');
+        
+        newItem.className = 'input-group mb-2 schedule-item';
+        newItem.innerHTML = `
+            <span class="input-group-text"><i class="far fa-clock"></i></span>
+            <input type="time" class="form-control" name="schedule_times[]" value="12:00">
+            <button type="button" class="btn btn-outline-danger remove-time" onclick="removeScheduleTime(this)">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        
+        container.appendChild(newItem);
+    }
+    
+    function removeScheduleTime(button) {
+        const item = button.parentElement;
+        item.parentElement.removeChild(item);
+    }
+    
+    // Синхронизация полей цвета с текстовым представлением
+    document.getElementById('primary_color').addEventListener('input', function() {
+        document.getElementById('primary_color_text').value = this.value;
+    });
+    document.getElementById('secondary_color').addEventListener('input', function() {
+        document.getElementById('secondary_color_text').value = this.value;
+    });
+    
+    // Активация нужной вкладки при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        // Получаем хэш из URL
+        const hash = window.location.hash || '#tokens';
+        
+        // Активируем соответствующую вкладку
+        const targetTab = document.querySelector(`a[href="${hash}"]`);
+        if (targetTab) {
+            const tab = new bootstrap.Tab(targetTab);
+            tab.show();
+        }
+    });
+    
+    // Обновление хэша в URL при переключении вкладок
+    const tabLinks = document.querySelectorAll('.list-group-item[data-bs-toggle="list"]');
+    tabLinks.forEach(function(tabLink) {
+        tabLink.addEventListener('shown.bs.tab', function() {
+            window.location.hash = this.getAttribute('href');
+        });
+    });
+</script>
+{% endblock %}

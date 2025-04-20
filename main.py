@@ -8,6 +8,11 @@ import json
 import calendar
 from flask import render_template, request, redirect, url_for, flash, jsonify, session
 from jinja2 import Environment
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, Length
+from werkzeug.security import generate_password_hash, check_password_hash
 from app import app, db
 from models import Post
 
@@ -29,8 +34,47 @@ from bot import create_and_send_post, get_post_history, TRADING_TOPICS, get_rand
 from utils import get_current_time_formatted, get_current_date_formatted, get_system_status, format_time_for_schedule, TIMEZONE
 from scheduler import scheduler
 
+# Настройка Flask-Login
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице.'
+login_manager.login_message_category = 'warning'
+
+# Simple User class for authentication
+class User(UserMixin):
+    def __init__(self, id, username, password_hash):
+        self.id = id
+        self.username = username
+        self.password_hash = password_hash
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+# User authentication form
+class LoginForm(FlaskForm):
+    username = StringField('Имя пользователя', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    remember = BooleanField('Запомнить меня')
+    submit = SubmitField('Войти')
+
+# Admin credentials - hardcoded for simplicity
+ADMIN_USER = User(
+    id=1,
+    username='TRADEPO',
+    password_hash=generate_password_hash('X12345x')
+)
+
+@login_manager.user_loader
+def load_user(user_id):
+    if int(user_id) == ADMIN_USER.id:
+        return ADMIN_USER
+    return None
+
 # Constants
 CHANNEL_ID = os.environ.get('CHANNEL_ID', '@tradepotrest')
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 SCHEDULE_TIMES = ["10:30", "13:30", "15:00", "17:00", "18:30"]
 SCHEDULED_POSTS_FILE = 'scheduled_posts.json'
 
