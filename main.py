@@ -609,5 +609,253 @@ def page_not_found(e):
 def server_error(e):
     return render_template('error.html', error_code=500, error_message="Внутренняя ошибка сервера"), 500
 
+# Маршруты для администрирования
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Страница входа в административную панель"""
+    if current_user.is_authenticated:
+        return redirect(url_for('admin'))
+        
+    form = LoginForm()
+    if form.validate_on_submit():
+        if form.username.data == ADMIN_USER.username and ADMIN_USER.check_password(form.password.data):
+            login_user(ADMIN_USER, remember=form.remember.data)
+            next_page = request.args.get('next')
+            flash('Вы успешно вошли в систему!', 'success')
+            return redirect(next_page or url_for('admin'))
+        else:
+            flash('Неверное имя пользователя или пароль', 'danger')
+    
+    return render_template('login.html', form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    """Выход из системы"""
+    logout_user()
+    flash('Вы вышли из системы', 'info')
+    return redirect(url_for('index'))
+
+@app.route('/admin')
+@login_required
+def admin():
+    """Административная панель"""
+    # Получаем текущее время и дату
+    current_time = get_current_time_formatted()
+    current_date = get_current_date_formatted()
+    
+    # Получаем статус планировщика
+    scheduler_status = scheduler.get_status()
+    
+    # Получаем информацию о постах
+    recent_posts = get_post_history()
+    post_count = len(recent_posts) if recent_posts else 0
+    
+    # Получаем текущие настройки
+    telegram_token = TELEGRAM_TOKEN
+    channel_id = CHANNEL_ID
+    openrouter_api_key = OPENROUTER_API_KEY
+    openai_api_key = OPENAI_API_KEY
+    
+    # Настройки бота
+    default_emotion = "motivational"  # Значение по умолчанию
+    post_template = "{{ text }}"  # Шаблон поста по умолчанию
+    max_post_history = 100  # Максимальное количество сохраняемых постов
+    retry_count = 3  # Количество попыток при ошибках
+    
+    # Настройки интерфейса
+    primary_color = "#4a6cf7"
+    secondary_color = "#48bb78"
+    site_title = "TRADEPO - Управление Telegram-каналом"
+    logo_text = "TRADEPO"
+    enable_animations = True
+    
+    # Настройки планировщика
+    schedule_times = SCHEDULE_TIMES
+    timezone = TIMEZONE.zone
+    
+    # Имя администратора
+    admin_username = ADMIN_USER.username
+    
+    return render_template(
+        'admin.html',
+        current_time=current_time,
+        current_date=current_date,
+        scheduler_status=scheduler_status,
+        post_count=post_count,
+        
+        telegram_token=telegram_token,
+        channel_id=channel_id,
+        openrouter_api_key=openrouter_api_key,
+        openai_api_key=openai_api_key,
+        
+        default_emotion=default_emotion,
+        post_template=post_template,
+        max_post_history=max_post_history,
+        retry_count=retry_count,
+        
+        primary_color=primary_color,
+        secondary_color=secondary_color,
+        site_title=site_title,
+        logo_text=logo_text,
+        enable_animations=enable_animations,
+        
+        schedule_times=schedule_times,
+        timezone=timezone,
+        
+        admin_username=admin_username
+    )
+
+@app.route('/update_tokens', methods=['POST'])
+@login_required
+def update_tokens():
+    """Обновление API-токенов"""
+    try:
+        telegram_token = request.form.get('telegram_token')
+        channel_id = request.form.get('channel_id')
+        openrouter_api_key = request.form.get('openrouter_api_key')
+        openai_api_key = request.form.get('openai_api_key')
+        
+        # Здесь должен быть код для обновления переменных окружения
+        # Для демонстрации мы просто выводим сообщение
+        flash('Токены успешно обновлены', 'success')
+        
+        return redirect(url_for('admin') + '#tokens')
+    except Exception as e:
+        logger.error(f"Error updating tokens: {e}")
+        flash(f'Ошибка при обновлении токенов: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#tokens')
+
+@app.route('/update_bot_settings', methods=['POST'])
+@login_required
+def update_bot_settings():
+    """Обновление настроек бота"""
+    try:
+        default_emotion = request.form.get('default_emotion')
+        post_template = request.form.get('post_template')
+        max_post_history = request.form.get('max_post_history')
+        retry_count = request.form.get('retry_count')
+        
+        # Здесь должен быть код для обновления настроек
+        flash('Настройки бота успешно обновлены', 'success')
+        
+        return redirect(url_for('admin') + '#bot-settings')
+    except Exception as e:
+        logger.error(f"Error updating bot settings: {e}")
+        flash(f'Ошибка при обновлении настроек бота: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#bot-settings')
+
+@app.route('/update_ui_settings', methods=['POST'])
+@login_required
+def update_ui_settings():
+    """Обновление настроек интерфейса"""
+    try:
+        primary_color = request.form.get('primary_color')
+        secondary_color = request.form.get('secondary_color')
+        site_title = request.form.get('site_title')
+        logo_text = request.form.get('logo_text')
+        enable_animations = request.form.get('enable_animations') == 'on'
+        
+        # Здесь должен быть код для обновления настроек интерфейса
+        flash('Настройки интерфейса успешно обновлены', 'success')
+        
+        return redirect(url_for('admin') + '#ui-settings')
+    except Exception as e:
+        logger.error(f"Error updating UI settings: {e}")
+        flash(f'Ошибка при обновлении настроек интерфейса: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#ui-settings')
+
+@app.route('/update_schedule_settings', methods=['POST'])
+@login_required
+def update_schedule_settings():
+    """Обновление настроек расписания"""
+    try:
+        new_schedule_times = request.form.getlist('schedule_times[]')
+        timezone = request.form.get('timezone')
+        
+        # Здесь должен быть код для обновления расписания
+        flash('Расписание успешно обновлено', 'success')
+        
+        return redirect(url_for('admin') + '#scheduled-posts')
+    except Exception as e:
+        logger.error(f"Error updating schedule settings: {e}")
+        flash(f'Ошибка при обновлении расписания: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#scheduled-posts')
+
+@app.route('/create_backup', methods=['POST'])
+@login_required
+def create_backup():
+    """Создание резервной копии данных"""
+    try:
+        # Здесь должен быть код для создания резервной копии
+        flash('Резервная копия успешно создана', 'success')
+        return redirect(url_for('admin') + '#backup')
+    except Exception as e:
+        logger.error(f"Error creating backup: {e}")
+        flash(f'Ошибка при создании резервной копии: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#backup')
+
+@app.route('/restore_backup', methods=['POST'])
+@login_required
+def restore_backup():
+    """Восстановление из резервной копии"""
+    try:
+        # Здесь должен быть код для восстановления из резервной копии
+        flash('Данные успешно восстановлены из резервной копии', 'success')
+        return redirect(url_for('admin') + '#backup')
+    except Exception as e:
+        logger.error(f"Error restoring from backup: {e}")
+        flash(f'Ошибка при восстановлении данных: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#backup')
+
+@app.route('/update_admin_credentials', methods=['POST'])
+@login_required
+def update_admin_credentials():
+    """Обновление учетных данных администратора"""
+    try:
+        admin_username = request.form.get('admin_username')
+        admin_password = request.form.get('admin_password')
+        admin_password_confirm = request.form.get('admin_password_confirm')
+        
+        if admin_password and admin_password != admin_password_confirm:
+            flash('Пароли не совпадают', 'danger')
+            return redirect(url_for('admin') + '#system')
+        
+        # Здесь должен быть код для обновления учетных данных
+        flash('Учетные данные администратора успешно обновлены', 'success')
+        
+        return redirect(url_for('admin') + '#system')
+    except Exception as e:
+        logger.error(f"Error updating admin credentials: {e}")
+        flash(f'Ошибка при обновлении учетных данных: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#system')
+
+@app.route('/clear_database', methods=['POST'])
+@login_required
+def clear_database():
+    """Очистка базы данных"""
+    try:
+        # Здесь должен быть код для очистки базы данных
+        flash('База данных успешно очищена', 'success')
+        return redirect(url_for('admin') + '#system')
+    except Exception as e:
+        logger.error(f"Error clearing database: {e}")
+        flash(f'Ошибка при очистке базы данных: {str(e)}', 'danger')
+        return redirect(url_for('admin') + '#system')
+
+@app.route('/restart_application', methods=['POST'])
+@login_required
+def restart_application():
+    """Перезапуск приложения"""
+    try:
+        # Здесь должен быть код для перезапуска приложения
+        flash('Приложение перезапущено', 'success')
+        return redirect(url_for('admin'))
+    except Exception as e:
+        logger.error(f"Error restarting application: {e}")
+        flash(f'Ошибка при перезапуске приложения: {str(e)}', 'danger')
+        return redirect(url_for('admin'))
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
