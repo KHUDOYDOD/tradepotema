@@ -724,6 +724,7 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "tlgbotfwk" },
     { name = "werkzeug" },
+    { name = "wtforms" },
 ]
 
 [package.metadata]
@@ -745,6 +746,7 @@ requires-dist = [
     { name = "sqlalchemy", specifier = ">=2.0.40" },
     { name = "tlgbotfwk", specifier = ">=0.4.61" },
     { name = "werkzeug", specifier = ">=3.1.3" },
+    { name = "wtforms", specifier = ">=3.2.1" },
 ]
 
 [[package]]
