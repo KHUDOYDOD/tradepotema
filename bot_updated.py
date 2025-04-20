@@ -285,13 +285,11 @@ def generate_post_text(prompt=None, emotion="motivational"):
         content_request = f"Напиши пост о трейдинге на тему: {user_prompt}\n\n"
         content_request += f"Тон поста должен быть {emotional_tone}\n\n"
         content_request += "Правила написания поста:\n"
-        content_request += "1. Длина поста: 800-1000 символов\n"
+        content_request += "1. Длина поста: 400-500 символов (не больше)\n"
         content_request += "2. Начни пост с подходящего эмодзи\n"
         content_request += "3. Используй простой язык, понятный даже новичкам в трейдинге\n"
-        content_request += "4. Добавь конкретные факты, цифры и практические советы\n"
-        content_request += "5. Разбей текст на короткие абзацы для лучшей читаемости\n"
-        content_request += "6. Используй список из 3-5 пунктов, если это уместно\n" 
-        content_request += "7. В конце добавь 3-4 хэштега, связанных с темой, и обязательно #трейдинг #tradepo\n\n"
+        content_request += "4. Добавь конкретный факт, цифру или практический совет\n"
+        content_request += "5. В конце добавь 2-3 хэштега, связанных с темой, и обязательно #трейдинг #tradepo\n\n"
         content_request += f"Текущая дата: {current_time.strftime('%d.%m.%Y')}."
             
         data = {
@@ -300,7 +298,7 @@ def generate_post_text(prompt=None, emotion="motivational"):
                 {"role": "system", "content": "Ты - опытный финансовый аналитик и эксперт по трейдингу. Твой стиль письма - авторитетный и полезный. Создавай уникальный контент."},
                 {"role": "user", "content": content_request}
             ],
-            "max_tokens": 600,  # Увеличено до 600 для более детального контента
+            "max_tokens": 250,  # Increase for more detailed content
             "temperature": 0.8  # Increase for more variety
         }
             
@@ -654,12 +652,8 @@ def get_post_history(limit=20):
         # Fallback to in-memory history on database error
         return post_history[:limit] if post_history else []
 
-def get_random_topic(emotion=None):
-    """Get a random topic for post generation that wasn't used recently
-    
-    Args:
-        emotion (str, optional): Эмоциональный тон для подбора тематической темы
-    """
+def get_random_topic():
+    """Get a random topic for post generation that wasn't used recently"""
     try:
         # Load custom topics if they exist
         custom_topics = []
@@ -670,30 +664,8 @@ def get_random_topic(emotion=None):
         except Exception as e:
             logger.error(f"Error loading custom topics: {e}")
         
-        # Если указан эмоциональный тон, предпочитаем темы из соответствующей категории
-        if emotion:
-            # Сопоставляем эмоции с категориями тем
-            emotion_topic_map = {
-                "motivational": "Мотивационные",
-                "educational": "Технический анализ",
-                "analytical": "Фундаментальный анализ",
-                "cautionary": "Управление рисками"
-            }
-            
-            # Если есть соответствующая категория, берем из неё темы
-            category = emotion_topic_map.get(emotion)
-            if category and category in EMOTIONAL_TOPICS_BY_CATEGORY:
-                category_topics = EMOTIONAL_TOPICS_BY_CATEGORY[category]
-                thematic_topics = category_topics
-            else:
-                # Если нет соответствующей категории, используем все доступные темы
-                thematic_topics = TRADING_TOPICS
-        else:
-            # Если эмоция не указана, используем все доступные темы
-            thematic_topics = TRADING_TOPICS
-        
         # Combine built-in and custom topics
-        all_topics = thematic_topics + custom_topics
+        all_topics = TRADING_TOPICS + custom_topics
         
         # Get recent post themes to avoid repetition
         recent_posts = get_post_history(10)
@@ -716,150 +688,3 @@ def get_random_topic(emotion=None):
         logger.error(f"Error getting random topic: {e}")
         # Fallback to simple random choice from built-in topics
         return random.choice(TRADING_TOPICS)
-        
-def analyze_post_performance(post_id=None, days=30):
-    """Анализирует эффективность постов на основе истории публикаций
-    
-    Args:
-        post_id (int, optional): ID конкретного поста для анализа
-        days (int, optional): Период анализа в днях
-        
-    Returns:
-        dict: Статистика постов
-    """
-    try:
-        if post_id:
-            # Анализ одного конкретного поста
-            try:
-                post = Post.query.filter_by(id=post_id).first()
-                if not post:
-                    return {"error": f"Пост с ID {post_id} не найден"}
-                
-                return {
-                    "post_id": post.id,
-                    "theme": post.theme,
-                    "timestamp": post.timestamp.isoformat(),
-                    "success": post.success,
-                    "processing_time": post.processing_time,
-                    "text_length": len(post.full_text) if post.full_text else 0
-                }
-            except Exception as e:
-                logger.error(f"Error analyzing post {post_id}: {e}")
-                return {"error": f"Ошибка анализа поста: {str(e)}"}
-        else:
-            # Анализ всех постов за указанный период
-            cutoff_date = datetime.datetime.now() - datetime.timedelta(days=days)
-            
-            try:
-                # Получаем все посты за период
-                posts = Post.query.filter(Post.timestamp >= cutoff_date).all()
-                
-                if not posts:
-                    return {"error": f"Нет постов за последние {days} дней"}
-                
-                # Собираем статистику
-                total_posts = len(posts)
-                successful_posts = sum(1 for p in posts if p.success)
-                failed_posts = total_posts - successful_posts
-                
-                # Считаем среднюю длину текста
-                text_lengths = [len(p.full_text) if p.full_text else 0 for p in posts]
-                avg_text_length = sum(text_lengths) / len(text_lengths) if text_lengths else 0
-                
-                # Анализируем используемые темы
-                themes = {}
-                for post in posts:
-                    if post.theme:
-                        themes[post.theme] = themes.get(post.theme, 0) + 1
-                
-                # Находим самые популярные темы
-                popular_themes = sorted(themes.items(), key=lambda x: x[1], reverse=True)[:5]
-                
-                # Анализируем время обработки
-                processing_times = []
-                for post in posts:
-                    if post.processing_time:
-                        try:
-                            # Обрабатываем формат "X.XXs"
-                            time_str = post.processing_time.replace("s", "")
-                            processing_times.append(float(time_str))
-                        except:
-                            pass
-                
-                avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else 0
-                
-                return {
-                    "period_days": days,
-                    "total_posts": total_posts,
-                    "successful_posts": successful_posts,
-                    "failed_posts": failed_posts,
-                    "success_rate": f"{(successful_posts / total_posts * 100):.1f}%" if total_posts > 0 else "0%",
-                    "avg_text_length": f"{avg_text_length:.1f} символов",
-                    "avg_processing_time": f"{avg_processing_time:.2f} сек.",
-                    "popular_themes": popular_themes,
-                    "posts_per_day": f"{total_posts / days:.1f}"
-                }
-                
-            except Exception as e:
-                logger.error(f"Error analyzing posts: {e}")
-                return {"error": f"Ошибка анализа постов: {str(e)}"}
-                
-    except Exception as e:
-        logger.error(f"Error in analyze_post_performance: {e}")
-        return {"error": f"Внутренняя ошибка: {str(e)}"}
-
-def generate_post_summary(theme, emotion="motivational"):
-    """Генерирует краткую версию поста для предпросмотра
-    
-    Args:
-        theme (str): Тема поста
-        emotion (str, optional): Эмоциональный тон
-        
-    Returns:
-        dict: Предварительный вариант поста с текстом и URL изображения
-    """
-    try:
-        # Генерируем краткую версию текста
-        prompt = f"Тема: {theme} (тон: {emotion})"
-        text = generate_post_text(theme, emotion)
-        
-        # Получаем URL изображения
-        image_url = get_image_url_by_theme(theme, emotion)
-        
-        # Формируем результат
-        return {
-            "theme": theme,
-            "emotion": emotion,
-            "text": text,
-            "text_preview": text[:100] + "..." if len(text) > 100 else text,
-            "image_url": image_url,
-            "timestamp": datetime.datetime.now().isoformat()
-        }
-    
-    except Exception as e:
-        logger.error(f"Error generating post summary: {e}")
-        return {
-            "theme": theme,
-            "emotion": emotion,
-            "error": format_error_for_display(e),
-            "timestamp": datetime.datetime.now().isoformat()
-        }
-
-def check_image_url(url):
-    """Проверяет доступность URL изображения
-    
-    Args:
-        url (str): URL для проверки
-        
-    Returns:
-        bool: True если изображение доступно, иначе False
-    """
-    try:
-        if not url or not url.startswith(('http://', 'https://')):
-            return False
-            
-        response = requests.head(url, timeout=5)
-        return response.status_code == 200
-    except Exception as e:
-        logger.error(f"Error checking image URL {url}: {e}")
-        return False
