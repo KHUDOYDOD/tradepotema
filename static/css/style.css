@@ -1,0 +1,94 @@
+/* Custom styles for TRADEPO app */
+
+/* Body and general styles */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+/* Card customization */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    font-weight: 500;
+}
+
+/* Suggestions for topics */
+.suggestion-box {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.suggestion-btn {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Tables */
+.table th {
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Custom focus styles for inputs */
+.form-control:focus, .btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-info-rgb), 0.25);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* Animations */
+.badge {
+    transition: all 0.2s ease-in-out;
+}
+
+.alert {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .suggestion-box {
+        max-height: 150px;
+    }
+}

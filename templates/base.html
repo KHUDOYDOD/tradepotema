@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TRADEPO - Управление Telegram-каналом{% endblock %}</title>
+    <!-- Bootstrap CSS (Темная тема Replit) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        .main-content {
+            min-height: 100vh;
+        }
+        .stat-card {
+            border-left: 4px solid var(--bs-primary);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .topic-item {
+            transition: background-color 0.2s;
+        }
+        .topic-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .post-item {
+            border-left: 3px solid var(--bs-info);
+        }
+        .post-item.error {
+            border-left-color: var(--bs-danger);
+        }
+        .post-text {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .icon-large {
+            font-size: 2rem;
+        }
+        .form-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+        .schedule-item {
+            border-left: 3px solid var(--bs-success);
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-light"><i class="fas fa-robot me-2"></i>TRADEPO</h4>
+                        <div class="text-muted small">Telegram Channel Manager</div>
+                    </div>
+                    <hr>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('index') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Панель управления
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('manage_images') }}">
+                                <i class="fas fa-images me-2"></i>
+                                Управление изображениями
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                {% block content %}{% endblock %}
+                
+                <footer class="mt-5 py-3 text-center text-muted">
+                    <hr>
+                    <p class="mb-0">&copy; 2025 TRADEPO | Telegram Channel Manager</p>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Flash messages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElList = document.querySelectorAll('.toast');
+            const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, {delay: 5000}));
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
+    
+    {% if get_flashed_messages() %}
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header {% if category == 'success' %}bg-success text-white{% elif category == 'danger' %}bg-danger text-white{% elif category == 'warning' %}bg-warning{% else %}bg-info text-white{% endif %}">
+                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-2"></i>
+                <strong class="me-auto">{{ category|capitalize }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

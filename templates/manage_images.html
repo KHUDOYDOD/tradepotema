@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление изображениями | TRADEPO{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3">Управление изображениями</h1>
+            <p class="text-muted">Добавляйте и удаляйте URL изображений для использования в постах</p>
+        </div>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Назад к панели
+            </a>
+        </div>
+    </div>
+    
+    <!-- Сообщения об ошибках и успехе -->
+    {% if error_message %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        {{ error_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
+    {% if success_message %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ success_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <!-- Форма добавления изображения -->
+        <div class="col-lg-4">
+            <div class="card bg-dark mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i> Добавить изображение</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('manage_images') }}" method="post">
+                        <input type="hidden" name="action" value="add">
+                        <div class="mb-3">
+                            <label for="image_url" class="form-label">URL изображения</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" 
+                                   placeholder="https://example.com/image.jpg" required>
+                            <div class="form-text">
+                                Введите прямую ссылку на изображение (URL должен заканчиваться .jpg, .png, .gif и т.д.)
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-1"></i> Добавить URL
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="text-muted small">
+                        <i class="fas fa-info-circle me-1"></i> 
+                        Изображения выбираются случайным образом при создании поста
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Советы по поиску изображений -->
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i> Советы</h5>
+                </div>
+                <div class="card-body">
+                    <p>Где найти подходящие изображения для постов о трейдинге:</p>
+                    <ul>
+                        <li>Unsplash - бесплатные фото высокого качества</li>
+                        <li>Pexels - бесплатные стоковые фото</li>
+                        <li>Pixabay - бесплатные изображения и видео</li>
+                        <li>StockSnap.io - бесплатные стоковые фото</li>
+                    </ul>
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Убедитесь, что у вас есть права на использование добавляемых изображений.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Список изображений -->
+        <div class="col-lg-8">
+            <div class="card bg-dark">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-images me-2"></i> Список изображений</h5>
+                    <span class="badge bg-primary">Всего: {{ image_urls|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if image_urls %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                        {% for url in image_urls %}
+                        <div class="col">
+                            <div class="card h-100 bg-dark border-secondary">
+                                <img src="{{ url }}" class="card-img-top" alt="Изображение" 
+                                     style="height: 150px; object-fit: cover;">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button class="btn btn-sm btn-secondary" 
+                                                onclick="navigator.clipboard.writeText('{{ url }}');alert('URL скопирован');">
+                                            <i class="fas fa-copy me-1"></i> Копировать
+                                        </button>
+                                        <form action="{{ url_for('manage_images') }}" method="post" class="d-inline">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="url_to_delete" value="{{ url }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt me-1"></i> Удалить
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-image fa-3x mb-3"></i>
+                        <p>Нет добавленных изображений</p>
+                        <p class="small">Добавьте изображения с помощью формы слева</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
