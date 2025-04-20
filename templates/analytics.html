@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+
+{% block title %}Аналитика публикаций | TRADEPO{% endblock %}
+
+{% block head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<style>
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+    .chart-card {
+        transition: all 0.3s ease;
+    }
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+    .analytics-header {
+        background: linear-gradient(45deg, var(--primary-color), #6c5ce7);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    .analytics-header:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1548094878-84ced0f6896d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxhbGx8fHx8fHx8fHwxNjIwMjU2ODgy&ixlib=rb-1.2.1&q=80&w=1080') no-repeat center center;
+        background-size: cover;
+        opacity: 0.1;
+        z-index: 0;
+    }
+    .analytics-header > * {
+        position: relative;
+        z-index: 1;
+    }
+    .stats-card {
+        border-left: 4px solid var(--primary-color);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        background-color: var(--card-bg);
+    }
+    .stats-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .kpi-item {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        background: linear-gradient(135deg, rgba(45, 55, 72, 0.7), rgba(30, 40, 55, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, #4a6cf7, #56CCF2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .kpi-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .engagement-card {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        position: relative;
+    }
+    .engagement-card:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(to right, #4a6cf7, #38b2ac);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Аналитический заголовок -->
+    <div class="analytics-header mb-4">
+        <h1 class="h3 mb-3">Аналитика публикаций</h1>
+        <p class="text-light mb-4">Детальный анализ эффективности постов канала и вовлеченности аудитории</p>
+        
+        <div class="row">
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="kpi-item">
+                    <i class="fas fa-chart-line fa-2x mb-3 text-info"></i>
+                    <div class="kpi-value">87%</div>
+                    <div class="kpi-label">Средний рейтинг успешности</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="kpi-item">
+                    <i class="fas fa-eye fa-2x mb-3 text-primary"></i>
+                    <div class="kpi-value">15.3K</div>
+                    <div class="kpi-label">Просмотров за неделю</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="kpi-item">
+                    <i class="fas fa-thumbs-up fa-2x mb-3 text-success"></i>
+                    <div class="kpi-value">4.2%</div>
+                    <div class="kpi-label">Средний уровень вовлеченности</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="kpi-item">
+                    <i class="fas fa-share-alt fa-2x mb-3 text-warning"></i>
+                    <div class="kpi-value">357</div>
+                    <div class="kpi-label">Репостов за месяц</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Основные графики -->
+        <div class="col-lg-8">
+            <!-- Публикации по дням недели и часам -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card chart-card bg-dark">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-calendar-day me-2"></i> Публикации по дням недели</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="dayOfWeekChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card chart-card bg-dark">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Публикации по часам</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="hourlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Тренды и активность -->
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="card chart-card bg-dark">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i> Активность по месяцам</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="monthlyActivityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Боковая панель с показателями -->
+        <div class="col-lg-4">
+            <!-- Успешность публикаций -->
+            <div class="card chart-card bg-dark mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i> Успешность публикаций</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="successRateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Метрики вовлеченности -->
+            <div class="card engagement-card bg-dark mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-heart me-2"></i> Вовлеченность аудитории</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="engagementChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    <div class="d-flex justify-content-between text-muted">
+                        <small>За последние 7 дней</small>
+                        <small><i class="fas fa-arrow-up text-success me-1"></i> 12.5% к прошлой неделе</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Список эффективных тем -->
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i> Самые успешные темы</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">1</span>
+                                Криптовалюты и блокчейн
+                            </div>
+                            <span class="badge bg-success">93%</span>
+                        </li>
+                        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">2</span>
+                                Технический анализ
+                            </div>
+                            <span class="badge bg-success">87%</span>
+                        </li>
+                        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">3</span>
+                                Новости рынка
+                            </div>
+                            <span class="badge bg-success">82%</span>
+                        </li>
+                        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">4</span>
+                                Психология трейдинга
+                            </div>
+                            <span class="badge bg-warning">78%</span>
+                        </li>
+                        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">5</span>
+                                Стратегии для новичков
+                            </div>
+                            <span class="badge bg-warning">72%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Настройка Chart.js
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+    Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.1)';
+    Chart.defaults.font.family = "'Montserrat', sans-serif";
+    
+    // Общие настройки для всех графиков
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    boxWidth: 12,
+                    font: {
+                        size: 11
+                    }
+                }
+            }
+        }
+    };
+    
+    // Цветовые градиенты для графиков
+    function createGradient(ctx, colorStart, colorEnd) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, colorStart);
+        gradient.addColorStop(1, colorEnd);
+        return gradient;
+    }
+    
+    // График по дням недели
+    const dayCtx = document.getElementById('dayOfWeekChart').getContext('2d');
+    const dayGradient = createGradient(dayCtx, 'rgba(74, 108, 247, 0.7)', 'rgba(74, 108, 247, 0.1)');
+    
+    const dayOfWeekChart = new Chart(dayCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ analytics_data.days_of_week.labels|tojson }},
+            datasets: [{
+                label: 'Количество постов',
+                data: {{ analytics_data.days_of_week.values|tojson }},
+                backgroundColor: dayGradient,
+                borderColor: '#4a6cf7',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // График по часам
+    const hourCtx = document.getElementById('hourlyChart').getContext('2d');
+    const hourGradient = createGradient(hourCtx, 'rgba(72, 187, 120, 0.7)', 'rgba(72, 187, 120, 0.1)');
+    
+    const hourlyChart = new Chart(hourCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ analytics_data.posts_by_hour.labels|tojson }},
+            datasets: [{
+                label: 'Количество постов',
+                data: {{ analytics_data.posts_by_hour.values|tojson }},
+                backgroundColor: hourGradient,
+                borderColor: '#48bb78',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                },
+                x: {
+                    ticks: {
+                        callback: function(value) {
+                            return value + ':00';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // График успешности публикаций
+    const successCtx = document.getElementById('successRateChart').getContext('2d');
+    
+    const successRateChart = new Chart(successCtx, {
+        type: 'line',
+        data: {
+            labels: {{ analytics_data.success_rate.labels|tojson }},
+            datasets: [{
+                label: 'Рейтинг успешности (%)',
+                data: {{ analytics_data.success_rate.values|tojson }},
+                borderColor: '#4a6cf7',
+                backgroundColor: 'rgba(74, 108, 247, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#4a6cf7',
+                pointBorderColor: '#fff',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // График ежемесячной активности
+    const monthlyCtx = document.getElementById('monthlyActivityChart').getContext('2d');
+    const monthlyGradient = createGradient(monthlyCtx, 'rgba(56, 178, 172, 0.7)', 'rgba(56, 178, 172, 0.1)');
+    
+    const monthlyActivityChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ month_names|tojson }},
+            datasets: [{
+                label: 'Количество постов',
+                data: {{ post_counts_by_month|tojson }},
+                backgroundColor: monthlyGradient,
+                borderColor: '#38b2ac',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // График вовлеченности
+    const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+    
+    const engagementChart = new Chart(engagementCtx, {
+        type: 'line',
+        data: {
+            labels: {{ engagement_data.days|tojson }},
+            datasets: [
+                {
+                    label: 'Просмотры',
+                    data: {{ engagement_data.views|tojson }},
+                    borderColor: '#4a6cf7',
+                    backgroundColor: 'transparent',
+                    tension: 0.3,
+                    pointBackgroundColor: '#4a6cf7',
+                    pointBorderColor: '#fff',
+                    pointRadius: 3,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Реакции',
+                    data: {{ engagement_data.reactions|tojson }},
+                    borderColor: '#48bb78',
+                    backgroundColor: 'transparent',
+                    tension: 0.3,
+                    pointBackgroundColor: '#48bb78',
+                    pointBorderColor: '#fff',
+                    pointRadius: 3,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Репосты',
+                    data: {{ engagement_data.shares|tojson }},
+                    borderColor: '#ecc94b',
+                    backgroundColor: 'transparent',
+                    tension: 0.3,
+                    pointBackgroundColor: '#ecc94b',
+                    pointBorderColor: '#fff',
+                    pointRadius: 3,
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

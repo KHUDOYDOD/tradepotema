@@ -95,31 +95,160 @@
         <div class="col-lg-6">
             <!-- Создание поста -->
             <div class="card bg-dark mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-pen-fancy me-2"></i> Создание поста</h5>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-chart-pie me-1"></i> Аналитика
+                    </a>
                 </div>
                 <div class="card-body">
                     <form action="{{ url_for('create_post') }}" method="post">
                         <div class="mb-3">
                             <label for="theme" class="form-label">Тема поста</label>
-                            <textarea class="form-control" id="theme" name="theme" rows="3" placeholder="Введите тему поста..."></textarea>
-                            <div class="form-text">Опишите тему, по которой будет сгенерирован пост.</div>
+                            <div class="input-group mb-1">
+                                <span class="input-group-text bg-dark border-secondary">
+                                    <i class="fas fa-lightbulb text-warning"></i>
+                                </span>
+                                <textarea class="form-control bg-dark border-secondary text-light" 
+                                      id="theme" name="theme" rows="3" 
+                                      placeholder="Введите тему поста, например: 'Стратегии торговли на волатильном рынке' или '5 правил управления рисками в трейдинге'"></textarea>
+                            </div>
+                            <div class="form-text">Опишите тему поста подробно. Система генерирует эмоциональный контент на основе вашего описания.</div>
                         </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="save_theme" name="save_theme">
-                            <label class="form-check-label" for="save_theme">
-                                Сохранить тему для будущего использования
+                        
+                        <div class="d-flex mb-3 gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="save_theme" name="save_theme">
+                                <label class="form-check-label" for="save_theme">
+                                    <i class="fas fa-bookmark text-primary me-1"></i> Сохранить тему
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="schedule_post" name="schedule_post">
+                                <label class="form-check-label" for="schedule_post">
+                                    <i class="fas fa-calendar-alt text-info me-1"></i> Запланировать
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Опции планирования (появляется при выборе "Запланировать") -->
+                        <div class="schedule-options mb-3 border border-secondary rounded p-3" id="scheduleOptions" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label for="schedule_date" class="form-label">Дата публикации</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary">
+                                            <i class="fas fa-calendar"></i>
+                                        </span>
+                                        <input type="date" class="form-control bg-dark border-secondary text-light" 
+                                               id="schedule_date" name="schedule_date" 
+                                               min="{{ current_date.split('.')[2] }}-{{ current_date.split('.')[1] }}-{{ current_date.split('.')[0] }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="schedule_time" class="form-label">Время публикации</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary">
+                                            <i class="fas fa-clock"></i>
+                                        </span>
+                                        <input type="time" class="form-control bg-dark border-secondary text-light" 
+                                               id="schedule_time" name="schedule_time">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-info small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Текущий часовой пояс: {{ timezone_name }}
+                            </div>
+                        </div>
+                        
+                        <!-- Опции эмоциональной окраски -->
+                        <div class="mb-3 border border-secondary rounded p-3">
+                            <label class="form-label d-flex align-items-center">
+                                <i class="fas fa-palette me-2 text-primary"></i>
+                                <span>Эмоциональная окраска поста</span>
                             </label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="post_emotion" id="emotion1" value="motivational" checked>
+                                    <label class="form-check-label" for="emotion1">
+                                        <i class="fas fa-fire text-danger me-1"></i> Мотивационный
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="post_emotion" id="emotion2" value="educational">
+                                    <label class="form-check-label" for="emotion2">
+                                        <i class="fas fa-book text-info me-1"></i> Обучающий
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="post_emotion" id="emotion3" value="analytical">
+                                    <label class="form-check-label" for="emotion3">
+                                        <i class="fas fa-chart-line text-success me-1"></i> Аналитический
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="post_emotion" id="emotion4" value="cautionary">
+                                    <label class="form-check-label" for="emotion4">
+                                        <i class="fas fa-exclamation-triangle text-warning me-1"></i> Предупреждающий
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="d-flex justify-content-between">
+                        
+                        <div class="d-flex flex-wrap justify-content-between gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane me-1"></i> Создать и отправить
                             </button>
-                            <a href="{{ url_for('create_random_post') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-random me-1"></i> Случайная тема
-                            </a>
+                            <div>
+                                <a href="{{ url_for('create_random_post') }}" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-random me-1"></i> Случайная тема
+                                </a>
+                                <a href="#" class="btn btn-outline-info" id="previewPostBtn" data-bs-toggle="modal" data-bs-target="#previewModal">
+                                    <i class="fas fa-eye me-1"></i> Предпросмотр
+                                </a>
+                            </div>
                         </div>
                     </form>
+                </div>
+            </div>
+            
+            <!-- Модальное окно предпросмотра -->
+            <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content bg-dark border-secondary">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title" id="previewModalLabel"><i class="fas fa-eye me-2"></i> Предпросмотр поста</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="telegram-preview p-3 border border-secondary rounded">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="telegram-avatar bg-primary rounded-circle p-2 me-2">
+                                        <i class="fab fa-telegram-plane text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ channel_id }}</div>
+                                        <div class="text-muted small">Канал • {{ current_date }} {{ current_time }}</div>
+                                    </div>
+                                </div>
+                                <div class="preview-image mb-3 rounded overflow-hidden" id="previewImage" style="height: 200px; background-color: #222; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                </div>
+                                <div class="preview-text" id="previewText">
+                                    <div class="placeholder-text text-center text-muted p-4">
+                                        Введите тему поста для предпросмотра
+                                    </div>
+                                </div>
+                                <div class="preview-hashtags mt-2 text-primary">
+                                    <span>#трейдинг #инвестиции #финансы #tradepo</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -217,50 +346,120 @@
             
             <!-- История постов -->
             <div class="card bg-dark">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-history me-2"></i> История публикаций</h5>
+                    <div>
+                        <span class="badge bg-primary rounded-pill">
+                            <i class="fas fa-list-ul me-1"></i> {{ recent_posts|length }}
+                        </span>
+                    </div>
                 </div>
                 <div class="card-body">
                     {% if recent_posts %}
                         <div class="list-group">
                             {% for post in recent_posts %}
-                            <div class="list-group-item bg-dark border-secondary post-item {% if not post.success %}error{% endif %} mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <small class="text-muted">{{ post.timestamp }}</small>
-                                    <span class="badge {% if post.success %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if post.success %}Успешно{% else %}Ошибка{% endif %}
-                                    </span>
+                            <div class="list-group-item bg-dark border-secondary post-item {% if not post.success %}error{% endif %} mb-3 p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            {% if post.success %}
+                                            <span class="badge bg-success rounded-circle p-2">
+                                                <i class="fas fa-check"></i>
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-danger rounded-circle p-2">
+                                                <i class="fas fa-times"></i>
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <span class="text-muted small">
+                                                <i class="far fa-clock me-1"></i> {{ post.timestamp }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="badge {% if post.success %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+                                            {% if post.success %}<i class="fas fa-paper-plane me-1"></i> Опубликован{% else %}<i class="fas fa-exclamation-circle me-1"></i> Ошибка{% endif %}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div class="my-2">
-                                    <strong>{{ post.theme }}</strong>
-                                </div>
-                                <div class="post-text text-muted small">
-                                    {% if post.text_snippet %}
-                                        {{ post.text_snippet }}
-                                    {% else %}
-                                        <em>Нет текста</em>
-                                    {% endif %}
-                                </div>
-                                {% if post.error %}
-                                <div class="mt-2 text-danger small">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> {{ post.error }}
-                                </div>
-                                {% endif %}
-                                <div class="mt-2 d-flex justify-content-between align-items-center">
+                                
+                                <div class="row">
+                                    <!-- Если есть изображение, показываем его -->
                                     {% if post.image_url %}
-                                    <span class="badge bg-info"><i class="fas fa-image me-1"></i> С изображением</span>
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <div class="position-relative rounded overflow-hidden" style="height: 150px;">
+                                            <img src="{{ post.image_url }}" alt="Изображение поста" class="img-fluid w-100 h-100 object-fit-cover">
+                                            <div class="position-absolute bottom-0 start-0 w-100 p-2" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-image me-1"></i> Финансовое изображение
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
                                     {% else %}
-                                    <span class="badge bg-secondary"><i class="fas fa-file-alt me-1"></i> Только текст</span>
+                                    <div class="col-12">
                                     {% endif %}
-                                    <small class="text-muted">{{ post.processing_time }}</small>
+                                        <div class="mb-2">
+                                            <h6 class="mb-1 text-primary">
+                                                {% if post.theme and post.theme.startswith('🔥') or post.theme.startswith('📈') or post.theme.startswith('💰') or post.theme.startswith('🚀') %}
+                                                    {{ post.theme }}
+                                                {% else %}
+                                                    <i class="fas fa-lightbulb me-1 text-warning"></i> {{ post.theme }}
+                                                {% endif %}
+                                            </h6>
+                                        </div>
+                                        <div class="post-text text-light small p-2 border-start border-primary bg-dark bg-opacity-50 rounded">
+                                            {% if post.text_snippet %}
+                                                {{ post.text_snippet|safe }}
+                                            {% else %}
+                                                <em>Нет текста</em>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        {% if post.error %}
+                                        <div class="mt-3 alert alert-danger py-2 small">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> {{ post.error }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 d-flex justify-content-between align-items-center border-top border-secondary pt-2">
+                                    <div>
+                                        <span class="badge bg-secondary me-1">
+                                            <i class="fas fa-hashtag me-1"></i>трейдинг
+                                        </span>
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-hashtag me-1"></i>инвестиции
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-dark text-light me-2">
+                                            <i class="fas fa-bolt me-1 text-warning"></i> {{ post.processing_time }}
+                                        </span>
+                                        {% if post.success %}
+                                        <button class="btn btn-sm btn-outline-primary" onclick="window.open('https://t.me/{{ channel_id|replace('@', '') }}')">
+                                            <i class="fab fa-telegram"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                     {% else %}
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                        <p>Нет истории публикаций</p>
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-newspaper fa-5x text-primary opacity-25"></i>
+                        </div>
+                        <h5 class="text-light mb-3">Нет истории публикаций</h5>
+                        <p class="text-muted">Создайте свой первый пост с помощью формы слева</p>
+                        <button class="btn btn-primary mt-2" onclick="document.querySelector('#theme').focus()">
+                            <i class="fas fa-plus-circle me-2"></i> Создать первый пост
+                        </button>
                     </div>
                     {% endif %}
                 </div>

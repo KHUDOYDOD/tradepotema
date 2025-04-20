@@ -8,48 +8,258 @@
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <style>
+        :root {
+            --primary-color: #4a6cf7;
+            --secondary-color: #6c757d;
+            --success-color: #48bb78;
+            --info-color: #38b2ac;
+            --warning-color: #ecc94b;
+            --danger-color: #e53e3e;
+            --gradient-primary: linear-gradient(135deg, #4a6cf7 0%, #2c3e50 100%);
+            --gradient-secondary: linear-gradient(135deg, #6c757d 0%, #343a40 100%);
+            --gradient-success: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
+            --dark-bg: #1a202c;
+            --card-bg: #2d3748;
+            --border-radius: 10px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark-bg);
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(74, 108, 247, 0.05) 0%, transparent 80%),
+                radial-gradient(circle at 75% 75%, rgba(72, 187, 120, 0.05) 0%, transparent 80%);
+            background-attachment: fixed;
+        }
+        
         .sidebar {
             height: 100vh;
             position: sticky;
             top: 0;
+            background-color: rgba(25, 30, 40, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
+        
         .main-content {
             min-height: 100vh;
         }
-        .stat-card {
-            border-left: 4px solid var(--bs-primary);
-            transition: transform 0.2s;
+        
+        .card {
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            background-color: var(--card-bg);
         }
-        .stat-card:hover {
+        
+        .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
         }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card {
+            background-image: var(--gradient-primary);
+            border: none;
+        }
+        
         .topic-item {
             transition: background-color 0.2s;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
         }
+        
         .topic-item:hover {
             background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
         }
+        
         .post-item {
-            border-left: 3px solid var(--bs-info);
+            border-left: 4px solid var(--info-color);
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
         }
+        
         .post-item.error {
-            border-left-color: var(--bs-danger);
+            border-left: 4px solid var(--danger-color);
         }
+        
         .post-text {
             max-height: 150px;
             overflow-y: auto;
+            padding-right: 5px;
         }
+        
+        .post-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .post-text::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 4px;
+        }
+        
         .icon-large {
-            font-size: 2rem;
+            font-size: 2.5rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background: -webkit-linear-gradient(45deg, #ffffff, #d0d0d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+        
         .form-toggle {
             cursor: pointer;
             user-select: none;
         }
+        
         .schedule-item {
-            border-left: 3px solid var(--bs-success);
+            border-left: 4px solid var(--success-color);
+            margin-bottom: 8px;
+        }
+        
+        .nav-link {
+            border-radius: var(--border-radius);
+            margin-bottom: 5px;
+            transition: var(--transition);
+            padding: 0.75rem 1rem;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background-image: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.5rem 1.25rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .btn:hover::after {
+            transform: translateX(100%);
+        }
+        
+        .btn-primary {
+            background-image: var(--gradient-primary);
+            border: none;
+        }
+        
+        .btn-success {
+            background-image: var(--gradient-success);
+            border: none;
+        }
+        
+        .toast {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Анимации для элементов */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card, .list-group-item {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .form-control, .form-select {
+            border-radius: var(--border-radius);
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(74, 108, 247, 0.25);
+        }
+        
+        /* Логотип с анимацией */
+        .logo-container {
+            position: relative;
+            padding: 1.5rem 0;
+        }
+        
+        .logo {
+            position: relative;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo:before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.6s ease;
+        }
+        
+        .logo:hover:before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        /* Бейджи с градиентом */
+        .badge {
+            padding: 0.5em 0.75em;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+        
+        .badge.bg-primary {
+            background-image: var(--gradient-primary) !important;
+        }
+        
+        .badge.bg-success {
+            background-image: var(--gradient-success) !important;
         }
     </style>
     {% block head %}{% endblock %}
@@ -58,14 +268,14 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
                 <div class="position-sticky pt-3">
-                    <div class="text-center mb-4">
-                        <h4 class="text-light"><i class="fas fa-robot me-2"></i>TRADEPO</h4>
-                        <div class="text-muted small">Telegram Channel Manager</div>
+                    <div class="logo-container text-center mb-4">
+                        <div class="logo"><i class="fas fa-robot me-2"></i>TRADEPO</div>
+                        <div class="text-muted small mt-2">Telegram Channel Manager</div>
                     </div>
-                    <hr>
-                    <ul class="nav flex-column">
+                    <hr class="my-4 bg-gradient-primary" style="opacity: 0.2;">
+                    <ul class="nav flex-column px-2">
                         <li class="nav-item">
                             <a class="nav-link active" href="{{ url_for('index') }}">
                                 <i class="fas fa-tachometer-alt me-2"></i>
@@ -79,6 +289,16 @@
                             </a>
                         </li>
                     </ul>
+                    
+                    <div class="mt-auto p-3 d-none d-md-block">
+                        <div class="card bg-dark mt-5 p-3 text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-user-shield fa-2x text-primary mb-3"></i>
+                            </div>
+                            <h6 class="mb-2">Администратор</h6>
+                            <p class="text-muted small mb-0">Управление Telegram-каналом</p>
+                        </div>
+                    </div>
                 </div>
             </nav>
 
@@ -87,7 +307,7 @@
                 {% block content %}{% endblock %}
                 
                 <footer class="mt-5 py-3 text-center text-muted">
-                    <hr>
+                    <hr style="opacity: 0.1;">
                     <p class="mb-0">&copy; 2025 TRADEPO | Telegram Channel Manager</p>
                 </footer>
             </main>
