@@ -313,8 +313,29 @@ def generate_post_text(prompt=None):
                     
     except Exception as e:
         logger.error(f"Error in generate_post_text: {e}")
-        # Return simple fallback text
-        return f"📊 Важное напоминание для всех трейдеров: анализируйте рынок перед каждой сделкой и следуйте своему торговому плану. Успешный трейдинг строится на дисциплине! #{prompt.replace(' ', '')} #трейдинг #tradepo"
+        # Return varied fallback texts based on theme and emotion
+        fallback_texts = [
+            "📊 Важное напоминание: анализируйте рынок перед каждой сделкой и следуйте своему торговому плану. Успешный трейдинг строится на дисциплине!",
+            "💰 Трейдинг — это марафон, а не спринт. Разработайте стратегию, которая соответствует вашим целям и временным горизонтам.",
+            "📈 Управление рисками — фундамент успешного трейдинга. Никогда не вкладывайте в одну сделку больше, чем можете позволить себе потерять.",
+            "💼 Помните, что в рыночных колебаниях скрыты возможности. Профессионалы видят перспективы там, где другие паникуют.",
+            "🧠 Психологическая устойчивость — ваше главное преимущество на рынке. Развивайте эмоциональный контроль и дисциплину.",
+            "📱 Технологии изменили рынки навсегда. Используйте современные инструменты анализа, чтобы оставаться на шаг впереди.",
+            "🔍 Фундаментальный анализ помогает понять, ЧТО покупать, технический анализ подсказывает, КОГДА это делать.",
+            "⚡ Рыночные тренды могут длиться дольше, чем вы рассчитываете. Не спешите против течения без веских причин."
+        ]
+        
+        # Use the theme as a seed for randomization to ensure different themes get different texts
+        # but the same theme consistently gets the same text within a session
+        seed = sum(ord(c) for c in prompt) if prompt else 0
+        random.seed(seed + time.time())  # Add time to ensure variation even for the same theme
+        
+        # Select a random fallback text
+        fallback_text = random.choice(fallback_texts)
+        
+        # Add hashtags and theme-specific hashtag
+        theme_hashtag = f"#{prompt.replace(' ', '')}" if prompt else "#трейдинг"
+        return f"{fallback_text} {theme_hashtag} #трейдинг #tradepo"
 
 def get_image_url_by_theme(theme="", emotion="motivational"):
     """Get an image URL that matches the post theme
@@ -468,10 +489,32 @@ def create_and_send_post(theme, emotion="motivational"):
         logger.info(f"Creating post with theme: {theme}, emotion: {emotion}")
         
         # Generate text for the post using the specified emotion
-        text = generate_post_text(theme)
+        text = generate_post_text(theme, emotion)
         
         # Get thematically relevant image URL based on the post content
         image_url = get_image_url_by_theme(theme, emotion)
+        
+        # Make sure we have a valid image URL - это хорошая практика, чтобы предотвратить ошибки Telegram API
+        if not image_url or not image_url.startswith(('http://', 'https://')):
+            # Если URL изображения некорректный, используем надежные запасные URL
+            fallback_images = [
+                "https://images.unsplash.com/photo-1611974789855-9c2a0a7236e3?q=80&w=1000&auto=format&fit=crop",  # Торговый график
+                "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=1000&auto=format&fit=crop",  # Бизнес
+                "https://images.unsplash.com/photo-1535320903710-d993d3d77d29?q=80&w=1000&auto=format&fit=crop"   # Технологии
+            ]
+            image_url = fallback_images[hash(theme) % len(fallback_images)]
+            logger.warning(f"Using fallback image URL: {image_url}")
+        
+        # Проверим URL изображения через HEAD-запрос, чтобы убедиться, что оно доступно
+        try:
+            response = requests.head(image_url, timeout=5)
+            if response.status_code != 200:
+                raise Exception(f"Image URL returned status code {response.status_code}")
+        except Exception as img_error:
+            logger.error(f"Error checking image URL: {img_error}")
+            # Если URL некорректный, используем гарантированно надежный запасной URL
+            image_url = "https://images.unsplash.com/photo-1535320903710-d993d3d77d29?q=80&w=1000&auto=format&fit=crop"
+            logger.warning(f"Using emergency fallback image URL after check failed")
         
         # Send message to Telegram
         success, result = send_telegram_message(text, image_url)
