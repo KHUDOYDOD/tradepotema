@@ -200,6 +200,7 @@ def create_post():
     schedule_post = request.form.get('schedule_post') == 'on'
     schedule_date = request.form.get('schedule_date', '')
     schedule_time = request.form.get('schedule_time', '')
+    post_emotion = request.form.get('post_emotion', 'motivational')
 
     if not theme:
         flash('Пожалуйста, укажите тему поста', 'warning')
@@ -219,7 +220,7 @@ def create_post():
                 return redirect(url_for('index'))
                 
             # Add to scheduled posts
-            add_scheduled_post(theme, scheduled_datetime.isoformat())
+            add_scheduled_post(theme, scheduled_datetime.isoformat(), post_emotion)
             
             flash(f'Пост на тему "{theme}" запланирован на {schedule_date} {schedule_time}', 'success')
             
@@ -235,8 +236,8 @@ def create_post():
 
     # Handle immediate post creation
     try:
-        # Create and send the post
-        success, text, image_url, result = create_and_send_post(theme)
+        # Create and send the post with the selected emotional tone
+        success, text, image_url, result = create_and_send_post(theme, post_emotion)
 
         if success:
             flash(f'Пост на тему "{theme}" успешно отправлен в канал {CHANNEL_ID}.', 'success')
